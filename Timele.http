@@ -1,0 +1,6 @@
+@Timele_HostAddress = http://localhost:5245
+
+GET {{Timele_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
