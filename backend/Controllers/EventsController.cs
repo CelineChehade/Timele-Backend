@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Timele.Dtos;
 using Timele.Models;
-
 namespace Timele.Controllers
 {
     [ApiController]
@@ -80,6 +81,53 @@ namespace Timele.Controllers
             int randomIndex = random.Next(filteredEvents.Count);
 
             return Ok(filteredEvents[randomIndex]);
+        }
+        [HttpPost("guess")]
+        public ActionResult<GuessResponse> SubmitGuess([FromBody] GuessRequest request)
+        {
+            TimelineEvent? timelineEvent = Events.FirstOrDefault(e => e.Id == request.EventId);
+
+            if (timelineEvent == null)
+            {
+                return NotFound("Event not found.");
+            }
+
+            if (request.GuessedYear < timelineEvent.Year)
+            {
+                return Ok(new GuessResponse
+                {
+                    Result = "TooEarly",
+                    Message = "Too early! Try a later year.",
+                    CorrectYear = timelineEvent.Year,
+                    PointsEarned = 0
+                });
+            }
+
+            if (request.GuessedYear > timelineEvent.Year)
+            {
+                return Ok(new GuessResponse
+                {
+                    Result = "TooLate",
+                    Message = "Too late! Try an earlier year.",
+                    CorrectYear = timelineEvent.Year,
+                    PointsEarned = 0
+                });
+            }
+
+            int points = timelineEvent.Difficulty switch
+            {
+                "Hard" => 30,
+                "Medium" => 20,
+                _ => 10
+            };
+
+            return Ok(new GuessResponse
+            {
+                Result = "Correct",
+                Message = $"Correct! The answer was {timelineEvent.Year}.",
+                CorrectYear = timelineEvent.Year,
+                PointsEarned = points
+            });
         }
     }
 }
