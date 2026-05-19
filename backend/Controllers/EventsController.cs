@@ -119,6 +119,39 @@ namespace Timele.Controllers
         [HttpPost]
         public ActionResult<TimelineEvent> CreateEvent([FromBody] TimelineEvent newEvent)
         {
+            if (newEvent == null)
+            {
+                return BadRequest("Event data is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(newEvent.Title))
+            {
+                return BadRequest("Event title is required.");
+            }
+
+            if (newEvent.Year <= 0)
+            {
+                return BadRequest("A valid year is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(newEvent.Category))
+            {
+                return BadRequest("Category is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(newEvent.Difficulty))
+            {
+                return BadRequest("Difficulty is required.");
+            }
+
+            bool alreadyExists = Events.Any(e =>
+                e.Title.Trim().ToLower() == newEvent.Title.Trim().ToLower());
+
+            if (alreadyExists)
+            {
+                return BadRequest("Event already exists.");
+            }
+
             int nextId = Events.Count == 0 ? 1 : Events.Max(e => e.Id) + 1;
 
             newEvent.Id = nextId;
